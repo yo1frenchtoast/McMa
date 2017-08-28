@@ -20,83 +20,85 @@
 #put the options in them like "-nostart -whatever  -else"
  
 #Dont edit above here
-USERNAME=minecraft
+USERNAME=mcmyadmin
 MCPATH=/home/$USERNAME/McMyAdmin
-NAME=McMa
+NAME=MCMA
 SERVICE=MCMA2_Linux_x86_64
 OPTIONS=""
 #Dont edit below here
  
 ME=`whoami`
 as_user() {
-if [ $ME == $USERNAME ] ; then
-bash -c "$1"
-else
-su - $USERNAME -c "$1"
-fi
+	if [ $ME == $USERNAME ] ; then
+		bash -c "$1"
+	else
+		su - $USERNAME -c "$1"
+	fi
 }
+
 mc_start() {
-if pgrep -u $USERNAME -f $SERVICE > /dev/null
-then
-echo "$NAME is already running!"
-else
-echo "Starting $NAME 10 seconds..."
-cd $MCPATH
-as_user "cd $MCPATH && screen -dmS $NAME ./$SERVICE $OPTIONS"
-sleep 7
-if pgrep -u $USERNAME -f $SERVICE > /dev/null
-then
-echo "$NAME is now running."
-else
-echo "Error! Could not start $NAME !"
-fi
-fi
+	if pgrep -u $USERNAME -f $SERVICE > /dev/null ; then
+		echo "$NAME is already running!"
+	else
+		echo "Starting $NAME 10 seconds..."
+		cd $MCPATH
+		as_user "cd $MCPATH && screen -dmS $NAME ./$SERVICE $OPTIONS"
+		sleep 7
+		if pgrep -u $USERNAME -f $SERVICE > /dev/null ;	then
+			echo "$NAME is now running."
+		else
+			echo "Error! Could not start $NAME !"
+		fi
+	fi
 }
+
 mc_stop() {
-if pgrep -u $USERNAME -f $SERVICE > /dev/null
-then
-echo "Stopping $NAME 25 seconds..."
-as_user "screen -p 0 -S $NAME -X eval 'stuff \"say SERVER SHUTTING DOWN IN 10 SECONDS. Saving map...\"\015'"
-sleep 10
-as_user "screen -p 0 -S $NAME -X eval 'stuff \"stop\"\015'"
-sleep 5
-as_user "screen -p 0 -s $NAME -X eval 'stuff \"/quit\"\015'"
-sleep 10
-else
-echo "$NAME was not running."
-fi
-if pgrep -u $USERNAME -f $SERVICE > /dev/null
-then
-echo "Error! $NAME could not be stopped."
-else
-echo "$NAME is stopped."
-fi
+	if pgrep -u $USERNAME -f $SERVICE > /dev/null ; then
+		echo "Stopping $NAME 25 seconds..."
+		as_user "screen -p 0 -S $NAME -X eval 'stuff \"say SERVER SHUTTING DOWN IN 10 SECONDS. Saving map...\"\015'"
+		sleep 10
+		as_user "screen -p 0 -S $NAME -X eval 'stuff \"stop\"\015'"
+		sleep 5
+		as_user "screen -p 0 -s $NAME -X eval 'stuff \"/quit\"\015'"
+		sleep 10
+	else
+		echo "$NAME was not running."
+	fi
+
+	if pgrep -u $USERNAME -f $SERVICE > /dev/null ; then
+		echo "Error! $NAME could not be stopped."
+	else
+		echo "$NAME is stopped."
+	fi
 }
+
 case "$1" in
-start)
-mc_start
-;;
-stop)
-mc_stop
-;;
-restart)
-mc_stop
-mc_start
-;;
-status)
-if pgrep -u $USERNAME -f $SERVICE > /dev/null
-then
-echo "$NAME is running."
-else
-echo "$NAME is not running."
-fi
-;;
-*)
-echo "Usage: service mcma {start|stop|status|restart}"
-exit 1
-;;
+	start)
+		mc_start
+		;;
+	stop)
+		mc_stop
+		;;
+	restart)
+		mc_stop
+		mc_start
+		;;
+	status)
+		if pgrep -u $USERNAME -f $SERVICE > /dev/null
+		then
+			echo "$NAME is running."
+		else
+			echo "$NAME is not running."
+		fi
+		;;
+	*)
+		echo "Usage: service mcma {start|stop|status|restart}"
+		exit 1
+		;;
 esac
+
 exit 0
+
 ############################
 # Copyright (c) 2014, Fred Barnes (aka:lrdfrd)
 # https://github.com/lrdfrd/McMa
